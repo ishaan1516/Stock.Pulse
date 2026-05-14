@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPulse — AI Stock Intelligence</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --border: #1e1e2e;
+            --accent: #6366f1;
+            --accent2: #06b6d4;
+            --green: #10b981;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --text: #e2e8f0;
+            --muted: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .tagline {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .search-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        input::placeholder {
+            color: var(--muted);
+        }
+
+        button {
+            padding: 0.75rem 1.75rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .result {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            display: none;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .score-ring {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 2.5px solid;
+        }
+
+        .score-ring.high {
+            border-color: var(--green);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .score-ring.mid {
+            border-color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .score-ring.low {
+            border-color: var(--muted);
+            background: rgba(100, 116, 139, 0.1);
+        }
+
+        .score-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-ring.high .score-num {
+            color: var(--green);
+        }
+
+        .score-ring.mid .score-num {
+            color: var(--amber);
+        }
+
+        .score-ring.low .score-num {
+            color: var(--muted);
+        }
+
+        .score-label {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .result-meta {
+            flex: 1;
+        }
+
+        .result-ticker {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.POSITIVE {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+        }
+
+        .badge.NEGATIVE {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+        }
+
+        .badge.MIXED {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--amber);
+        }
+
+        .badge.NEUTRAL {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--muted);
+        }
+
+        .badge.conf {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+        }
+
+        .verdict {
+            background: var(--bg);
+            border-left: 3px solid var(--accent);
+            padding: 0.9rem 1.1rem;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .section {
+            margin-bottom: 1.25rem;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+        }
+
+        .section-text {
+            color: #94a3b8;
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .factors {
+            list-style: none;
+        }
+
+        .factors li {
+            padding: 0.4rem 0;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .factors li:last-child {
+            border-bottom: none;
+        }
+
+        .factors li::before {
+            content: "→";
+            color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            color: var(--red);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1.25rem 0;
+        }
+
+        .period {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">StockPulse ⚡</div>
+            <div class="tagline">AI-powered weekly stock reaction intelligence</div>
+        </div>
+
+        <div class="search-box">
+            <div class="input-row">
+                <input type="text" id="ticker" placeholder="Ticker — RELIANCE, TSLA, INFY" />
+                <input type="text" id="company" placeholder="Company name" />
+                <button onclick="analyse()" id="btn">Analyse</button>
+            </div>
+            <div class="hint">Analysis takes 20–30 seconds — fetching real-time news and generating AI insights</div>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        async function analyse() {
+            const ticker = document.getElementById('ticker').value.trim();
+            const company = document.getElementById('company').value.trim();
+            const btn = document.getElementById('btn');
+            const resultDiv = document.getElementById('result');
+
+            if (!ticker || !company) {
+                alert('Please enter both ticker and company name');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Analysing...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Fetching news and generating analysis...
+                </div>`;
+
+            try {
+                const response = await fetch('/api/v1/analysis/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker, company })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail?.message || 'Analysis failed');
+                }
+
+                const data = await response.json();
+                renderResult(data);
+            } catch (e) {
+                resultDiv.innerHTML = `<div class="error">Analysis failed: ${e.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Analyse';
+            }
+        }
+
+        function renderResult(d) {
+            const score = d.reaction_score;
+            const ringClass = score >= 7 ? 'high' : score >= 4 ? 'mid' : 'low';
+
+            document.getElementById('result').innerHTML = `
+                <div class="result-header">
+                    <div class="score-ring ${ringClass}">
+                        <span class="score-num">${score}</span>
+                        <span class="score-label">/ 10</span>
+                    </div>
+                    <div class="result-meta">
+                        <div class="result-ticker">${d.ticker} — ${d.company}</div>
+                        <div class="badges">
+                            <span class="badge ${d.direction}">${d.direction}</span>
+                            <span class="badge conf">${d.confidence} confidence</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="verdict">${d.one_line_verdict}</div>
+
+                <div class="section">
+                    <div class="section-label">Weekly Summary</div>
+                    <div class="section-text">${d.weekly_summary}</div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="section">
+                    <div class="section-label">Key Factors</div>
+                    <ul class="factors">
+                        ${d.key_factors.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="section">
+                    <div class="section-label">Risk Factors</div>
+                    <ul class="factors">
+                        ${d.risk_factors.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="section">
+                    <div class="section-label">Historical Context</div>
+                    <div class="section-text">${d.monthly_context}</div>
+                </div>
+
+                <div class="period">Analysis period: ${d.period}</div>
+            `;
+        }
+
+        document.addEventListener('keypress', e => {
+            if (e.key === 'Enter') analyse();
+        });
+    </script>
+</body>
+
+</html>
