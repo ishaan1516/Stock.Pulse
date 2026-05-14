@@ -41,23 +41,32 @@ Write 3-4 paragraphs. Be specific. No generic statements.
 """
 
 RATING_PROMPT = """
-You are a senior equity analyst. Analyse {company} ({ticker})
-and provide a structured stock reaction assessment.
+You are a senior equity analyst. Analyse {company} ({ticker}) based on the weekly summary below.
 
 Weekly summary: {weekly_summary}
 
 Historical context: {monthly_context}
 
-Scoring guide:
-8-10: Major catalyst — earnings surprise, M&A, regulatory decision, macro shock
-5-7: Moderate — business updates, sector news, mixed signals
-1-4: Routine news, no significant catalyst, stable environment
+SCORING RULES — be specific and decisive:
+- Score 9-10: ONLY if there is a major earnings surprise, M&A announcement, CEO resignation, bankruptcy filing, or major regulatory action THIS WEEK
+- Score 7-8: Clear positive or negative catalyst — beat/miss expectations, new product launch, significant contract win/loss, major lawsuit
+- Score 5-6: Moderate news — routine business updates, minor partnerships, sector news with indirect impact
+- Score 3-4: Mostly quiet week — no significant company-specific news, general market noise only
+- Score 1-2: Completely routine — no news of any significance whatsoever
+
+Direction rules:
+- POSITIVE: News is net favourable for stock price
+- NEGATIVE: News is net unfavourable for stock price  
+- MIXED: Genuinely conflicting signals of similar magnitude
+- NEUTRAL: No meaningful directional signal
+
+Do NOT default to score 6. Be honest about what the news actually says.
+If it was a big week give a high score. If it was a quiet week give a low score.
 
 {format_instructions}
 
 Return ONLY valid JSON. No explanation before or after.
 """
-
 
 class LLMService:
     def __init__(self):
