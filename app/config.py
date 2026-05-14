@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # LLM via OpenRouter
     OPENROUTER_API_KEY: str
     LLM_MODEL: str = "meta-llama/llama-3.1-8b-instruct:free"
-    LLM_TEMPERATURE: float = 0.2
+    LLM_TEMPERATURE: float = 0.4
     MAX_NEWS_TOKENS: int = 8000
 
     # Search
